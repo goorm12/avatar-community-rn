@@ -1,5 +1,6 @@
 import { getMe, postLogin, postSignup } from "@/api/auth";
 import queryClient from "@/api/queryClient";
+import { queryKey } from "@/constants";
 import { removeHeader, setHeader } from "@/utils/header";
 import {
   deleteSecureStore,
@@ -13,7 +14,7 @@ import { useEffect } from "react";
 function useGetMe() {
   const { data, isError, isSuccess } = useQuery({
     queryFn: getMe,
-    queryKey: ["auth", "getMe"],
+    queryKey: [queryKey.AUTH, queryKey.GET_ME],
   });
 
   useEffect(() => {

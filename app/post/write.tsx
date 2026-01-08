@@ -38,7 +38,6 @@ export default function PostWriteScreen() {
           size="medium"
           variant="standard"
           onPress={postForm.handleSubmit(onSubmit)}
-          pressRetentionOffset={1000}
         />
       ),
     });

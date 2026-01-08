@@ -19,7 +19,7 @@ export default function PostLayout() {
           headerShown: true,
           title: "글 쓰기",
           headerLeft: () => (
-            <Link href={"/"} replace style={{ paddingRight: 5 }}>
+            <Link href={"/"} replace>
               <Feather name="arrow-left" size={28} color={"black"} />
             </Link>
           ),
