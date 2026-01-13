@@ -28,10 +28,11 @@ export default function FeedItem({ post, isDetail = false }: FeedItemProps) {
     showActionSheetWithOptions(
       { options, destructiveButtonIndex, cancelButtonIndex },
       (selectedIndex) => {
-        console.log("selectedIndex", selectedIndex);
         switch (selectedIndex) {
           case destructiveButtonIndex:
-            deletePosts.mutate(post.id);
+            deletePosts.mutate(post.id, {
+              onSuccess: () => isDetail && router.back(),
+            });
             break;
           case 1:
             router.push(`/post/update/${post.id}`);

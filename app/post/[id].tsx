@@ -1,56 +1,150 @@
 import AuthRoute from "@/components/AuthRoute";
+import CommentItem from "@/components/CommentItem";
 import FeedItem from "@/components/FeedItem";
 import InputField from "@/components/InputField";
 import { colors } from "@/constants";
+import useCreateComment from "@/hooks/queries/useCreateComment";
 import useGetPost from "@/hooks/queries/useGetPost";
+import useKeyboard from "@/hooks/useKeyboard";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { useLocalSearchParams } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Fragment, useRef, useState } from "react";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 export default function PostDetailScreen() {
   const { id } = useLocalSearchParams();
   const { data: post, isPending, isError } = useGetPost(Number(id));
-
+  const createComment = useCreateComment();
+  const [content, setContent] = useState("");
+  const scrollRef = useRef<ScrollView | null>(null);
+  const inputRef = useRef<TextInput | null>(null);
+  const [parentCommentId, setParentCommentId] = useState<number | null>(null);
+  const { isKeyboardVisible } = useKeyboard();
+  const insets = useSafeAreaInsets();
+  const headerHeight = useHeaderHeight();
   if (isPending || isError) {
     return <></>;
   }
 
+  const handleReply = (commentId: number) => {
+    setParentCommentId(commentId);
+
+    inputRef.current?.focus();
+  };
+
+  const handleCancelReply = () => {
+    setParentCommentId(null);
+    Keyboard.dismiss();
+  };
+
+  const handleSubmitComment = () => {
+    const commentData = {
+      postId: post.id,
+      content: content,
+    };
+    if (parentCommentId) {
+      createComment.mutate({ ...commentData, parentCommentId });
+      setContent("");
+      handleCancelReply();
+      return;
+    }
+
+    createComment.mutate(commentData);
+    setContent("");
+    setTimeout(() => {
+      scrollRef.current?.scrollToEnd();
+    }, 500);
+  };
+
   return (
     <AuthRoute>
-      <SafeAreaView
-        edges={["left", "right", "bottom"]}
-        style={styles.container}
-      >
-        <KeyboardAwareScrollView
-          contentContainerStyle={styles.awareScrollViewContainer}
+      <SafeAreaView style={styles.container} edges={["right", "left"]}>
+        <KeyboardAvoidingView
+          style={styles.awareScrollViewContainer}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={
+            Platform.OS === "ios" || isKeyboardVisible
+              ? headerHeight
+              : insets.bottom
+          }
         >
-          <ScrollView contentContainerStyle={styles.scrollViewContainer}>
-            <View style={{ marginTop: 12 }}>
-              <FeedItem post={post} isDetail />
-              <Text style={styles.commentCount}>
-                댓글 {post.commentCount}개
-              </Text>
-            </View>
-          </ScrollView>
+          <View style={{ flex: 1, position: "relative" }}>
+            <ScrollView
+              ref={scrollRef}
+              contentContainerStyle={[
+                styles.scrollViewContainer,
+                { paddingBottom: 80 + insets.bottom },
+              ]}
+            >
+              <View style={{ marginTop: 12 }}>
+                <FeedItem post={post} isDetail />
+                <Text style={styles.commentCount}>
+                  댓글 {post.commentCount}개
+                </Text>
+              </View>
 
-          <View style={styles.commentInputContainer}>
-            <InputField
-              rightChild={
-                <Pressable style={styles.inputButtonContainer}>
-                  <Text style={styles.inputButtonText}>등록</Text>
-                </Pressable>
-              }
-            />
+              {post.comments?.map((comment) => (
+                <Fragment key={comment.id}>
+                  <CommentItem
+                    parentCommentId={parentCommentId}
+                    onReply={() => handleReply(comment.id)}
+                    onCancelReply={handleCancelReply}
+                    comment={comment}
+                  />
+                  {comment.replies.map((reply) => (
+                    <CommentItem key={reply.id} comment={reply} isReply />
+                  ))}
+                </Fragment>
+              ))}
+            </ScrollView>
+
+            <View style={styles.commentInputContainer}>
+              <InputField
+                ref={inputRef}
+                value={content}
+                returnKeyType="send"
+                onSubmitEditing={handleSubmitComment}
+                onChangeText={(text) => setContent(text)}
+                placeholder={
+                  parentCommentId ? "답글 남기는중..." : "댓글을 남겨보세요."
+                }
+                rightChild={
+                  <Pressable
+                    disabled={!content}
+                    style={styles.inputButtonContainer}
+                    onPress={handleSubmitComment}
+                  >
+                    <Text style={styles.inputButtonText}>등록</Text>
+                  </Pressable>
+                }
+              />
+            </View>
           </View>
-        </KeyboardAwareScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </AuthRoute>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.WHITE },
+  container: {
+    flex: 1,
+    backgroundColor: colors.WHITE,
+  },
   awareScrollViewContainer: {
     flex: 1,
     backgroundColor: colors.GRAY_200,
@@ -72,6 +166,8 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     backgroundColor: colors.WHITE,
     padding: 16,
+    left: 0,
+    right: 0,
     bottom: 0,
     position: "absolute",
   },
