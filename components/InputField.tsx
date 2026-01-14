@@ -38,7 +38,7 @@ function InputField(
       >
         <TextInput
           ref={ref}
-          style={styles.input}
+          style={[styles.input, styles[`${variant}Text`]]}
           placeholderTextColor={colors.GRAY_500}
           autoCapitalize="none"
           spellCheck={false}
@@ -64,8 +64,19 @@ const styles = StyleSheet.create({
   filled: {
     backgroundColor: colors.GRAY_100,
   },
-  standard: {},
-  outlined: {},
+  standard: {
+    borderWidth: 1,
+    borderColor: colors.GRAY_200,
+  },
+  outlined: {
+    borderWidth: 1,
+    borderColor: colors.ORANGE_600,
+  },
+  standardText: {
+    color: colors.BLACK,
+  },
+  outlinedText: { color: colors.ORANGE_600, fontWeight: "bold" },
+  filledText: { color: colors.BLACK },
   label: {
     fontSize: 12,
     color: colors.GRAY_700,
