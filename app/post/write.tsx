@@ -1,5 +1,6 @@
 import CustomButton from "@/components/CustomButton";
 import DescriptionInput from "@/components/DescriptionInput";
+import PostWriteFooter from "@/components/PostWriteFooter";
 import TitleInput from "@/components/TitleInput";
 import useCreatePost from "@/hooks/queries/useCreatePost";
 import { ImageUri } from "@/types";
@@ -30,6 +31,8 @@ export default function PostWriteScreen() {
     createPost.mutate(formValues);
   };
 
+  console.log("postForm", postForm.watch().imageUris);
+
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -49,6 +52,7 @@ export default function PostWriteScreen() {
         <TitleInput />
         <DescriptionInput />
       </KeyboardAwareScrollView>
+      <PostWriteFooter />
     </FormProvider>
   );
 }
