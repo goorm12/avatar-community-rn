@@ -5,7 +5,7 @@ import Ioncicons from "@expo/vector-icons/Ionicons";
 import * as ImagePicker from "expo-image-picker";
 import React from "react";
 import { useFormContext, useWatch } from "react-hook-form";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Alert, Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function PostWriteFooter() {
@@ -15,6 +15,10 @@ export default function PostWriteFooter() {
   const [imageUris] = useWatch({ control, name: ["imageUris"] });
 
   const addImageUris = (uris: string[]) => {
+    if (imageUris.length + uris.length > 5) {
+      Alert.alert("이미지 개수 초과", "추가 가능한 이미지는 최대 5개입니다.");
+      return;
+    }
     setValue("imageUris", [...imageUris, ...uris.map((uri) => ({ uri: uri }))]);
   };
 
