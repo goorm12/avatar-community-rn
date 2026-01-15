@@ -30,6 +30,7 @@ const queryKey = {
   GET_MY_POSTS: "getMyPosts",
   GET_USER_PROFILE: "getUserProfile",
   GET_USER_POSTS: "getUserPosts",
+  AVATAR: "avatar",
 };
 
 export { colors, queryKey };

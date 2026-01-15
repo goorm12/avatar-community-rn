@@ -19,7 +19,7 @@ interface FeedItemProps {
 export default function FeedItem({ post, isDetail = false }: FeedItemProps) {
   const { auth } = useAuth();
   const likeUsers = post.likes?.map((like) => Number(like.userId));
-  console.log("auth", auth.id);
+
   const isLiked = likeUsers?.includes(Number(auth.id));
   const { showActionSheetWithOptions } = useActionSheet();
   const deletePosts = useDeletePost();

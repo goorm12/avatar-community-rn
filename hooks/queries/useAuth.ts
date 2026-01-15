@@ -1,4 +1,4 @@
-import { getMe, postLogin, postSignup } from "@/api/auth";
+import { editProfile, getMe, postLogin, postSignup } from "@/api/auth";
 import queryClient from "@/api/queryClient";
 import { queryKey } from "@/constants";
 import { removeHeader, setHeader } from "@/utils/header";
@@ -61,10 +61,27 @@ function useSignup() {
   });
 }
 
+function useUpdateProfile() {
+  return useMutation({
+    mutationFn: editProfile,
+    onSuccess: (newProfile) => {
+      queryClient.setQueryData([queryKey.AUTH, queryKey.GET_ME], newProfile);
+      queryClient.invalidateQueries({
+        queryKey: [queryKey.POST, queryKey.GET_POSTS],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: [queryKey.POST, queryKey.GET_LIKED_POSTS],
+      });
+    },
+  });
+}
+
 function useAuth() {
   const { data } = useGetMe();
   const loginMutation = useLogin();
   const signupMutation = useSignup();
+  const profileMutation = useUpdateProfile();
 
   const logout = () => {
     removeHeader("Authorization");
@@ -78,9 +95,16 @@ function useAuth() {
       nickname: data?.nickname || "",
       imageUri: data?.imageUri || "",
       introduce: data?.introduce || "",
+      hatId: data?.hatId || "",
+      faceId: data?.faceId || "",
+      topId: data?.topId || "",
+      bottomId: data?.bottomId || "",
+      handId: data?.handId || "",
+      skinId: data?.skinId || "",
     },
     loginMutation,
     signupMutation,
+    profileMutation,
     logout,
   };
 }
